@@ -61,6 +61,12 @@ def split_validation_train(train_x, train_y):
     return train_x, train_y, validation_x, validation_y
 
 
+def run_model(model, train_loader, validation_loader):
+    for e in range(1, EPOCH + 1):
+        train(model, train_loader)
+        test(model, validation_loader)
+
+
 def train(model, train_loader):
     model.train()
     for batch_idx, (data_, labels) in enumerate(train_loader):
@@ -78,6 +84,16 @@ def test(model, validation_loader):
     with torch.no_grad():
         for data_, target in validation_loader:
             output = model(data_)
+            # sum up batch loss
+            test_loss += F.nll_loss(output, target, size_average=False).item()
+            # get index of the max log - probability
+            pred = output.max(1, keepdim=True)[1]
+            correct += pred.eq(target.view_as(pred)).cpu().sum()
+    test_loss /= len(validation_loader.dataset)
+    print("\nTests set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n".format(test_loss, correct,
+                                                                                  len(validation_loader.dataset),
+                                                                                  100. * correct / len(
+                                                                                      validation_loader.dataset)))
 
 
 def create_loaders(train_x, train_y, validation_x, validation_y):
@@ -92,7 +108,7 @@ def create_loaders(train_x, train_y, validation_x, validation_y):
 
 def run_models(train_loader, validation_loader):
     model_a = ModelA(IMAGE_SIZE)
-    train(model_a, train_loader)
+    run_model(model_a, train_loader, validation_loader)
 
 
 def main():
