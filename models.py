@@ -19,7 +19,7 @@ class ModelA(nn.Module):
         x = F.relu(self.fc0(x))
         x = F.relu(self.fc1(x))
         x = self.fc2(x)
-        return F.log_softmax(x)
+        return F.log_softmax(x, dim=1)
 
 
 class ModelB(nn.Module):
@@ -36,7 +36,27 @@ class ModelB(nn.Module):
         x = F.relu(self.fc0(x))
         x = F.relu(self.fc1(x))
         x = self.fc2(x)
-        return F.log_softmax(x)
+        return F.log_softmax(x, dim=1)
+
+
+class ModelC(nn.Module):
+    def __init__(self, image_size):
+        super(ModelC, self).__init__()
+        self.image_size = image_size
+        self.fc0 = nn.Linear(image_size, 100)
+        self.fc1 = nn.Linear(100, 50)
+        self.fc2 = nn.Linear(50, 10)
+        self.optimizer = torch.optim.SGD(self.parameters(), lr=LR)
+
+    def forward(self, x):
+        drop = nn.Dropout(p=0.2)
+        x = x.view(-1, self.image_size)
+        x = F.relu(self.fc0(x))
+        x = drop(x)
+        x = F.relu(self.fc1(x))
+        x = drop(x)
+        x = self.fc2(x)
+        return F.log_softmax(x, dim=1)
 
 
 class ModelE(nn.Module):
@@ -81,4 +101,3 @@ class ModelF(nn.Module):
         x = F.sigmoid(self.fc3(x))
         x = self.fc4(x)
         return F.log_softmax(self.fc5(x))
-

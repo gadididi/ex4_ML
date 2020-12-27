@@ -4,7 +4,7 @@ import numpy as np
 import torchvision
 from torch.utils import data
 import torch.nn.functional as F
-from models import ModelA, ModelB
+from models import ModelA, ModelB, ModelC
 
 TRAIN_SIZE = 0.8
 VALIDATION_SIZE = 0.2
@@ -70,7 +70,7 @@ def test(model, validation_loader):
         for data_, target in validation_loader:
             output = model(data_)
             # sum up batch loss
-            test_loss += F.nll_loss(output, target, size_average=False).item()
+            test_loss += F.nll_loss(output, target, reduction="sum").item()
             # get index of the max log - probability
             pred = output.max(1, keepdim=True)[1]
             correct += pred.eq(target.view_as(pred)).cpu().sum()
@@ -92,11 +92,15 @@ def create_loaders(train_x, train_y, validation_x, validation_y):
 
 
 def run_models(train_loader, validation_loader):
+    print("*********************** MODEL A ******************** ")
     model_a = ModelA(IMAGE_SIZE)
     run_model(model_a, train_loader, validation_loader)
+    print("******************** MODEL B *********************** ")
     model_b = ModelB(IMAGE_SIZE)
-    print("*******************************************")
     run_model(model_b, train_loader, validation_loader)
+    print("******************** MODEL C *********************** ")
+    model_c = ModelC(IMAGE_SIZE)
+    run_model(model_c, train_loader, validation_loader)
 
 
 def main():
@@ -115,6 +119,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
-
