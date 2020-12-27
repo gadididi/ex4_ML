@@ -5,6 +5,7 @@ import torchvision
 from torch.utils import data
 import torch.nn.functional as F
 from models import ModelA, ModelB, ModelC, ModelD, ModelE, ModelF
+import matplotlib.pyplot as plt
 
 TRAIN_SIZE = 0.8
 VALIDATION_SIZE = 0.2
@@ -46,31 +47,56 @@ def split_validation_train(train_x, train_y):
     return train_x, train_y, validation_x, validation_y
 
 
+def show_graph_accuracy(loss_train, loss_val):
+    pass
+
+
+def show_graph_loss(loss_train, loss_val):
+    lt = np.array(loss_train)
+    lv = np.array(loss_val)
+    epoch = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+    plt.plot(epoch, lt, 'g', label='Training loss')
+    plt.plot(epoch, lv, 'b', label='validation loss')
+    plt.title('Training and Validation loss')
+    plt.xlabel('Epochs')
+    plt.ylabel('Loss')
+    plt.legend()
+    plt.show()
+
+
 def run_model(model, train_loader, validation_loader):
+    loss_trains = []
+    loss_tests = []
     for e in range(1, EPOCH + 1):
-        train(model, train_loader)
-        test(model, validation_loader)
+        loss_trains.append(train(model, train_loader))
+        loss_tests.append(test(model, validation_loader))
+    show_graph_loss(loss_trains, loss_tests)
 
 
 def train(model, train_loader):
     model.train()
+    losses = 0
     for batch_idx, (data_, labels) in enumerate(train_loader):
         model.optimizer.zero_grad()
         output = model(data_)
         loss = F.nll_loss(output, labels)
+        losses += F.nll_loss(output, labels, size_average=False).item()
         loss.backward()
         model.optimizer.step()
+    return losses
 
 
 def test(model, validation_loader):
     model.eval()
     test_loss = 0
+    tmp_loss = 0
     correct = 0
     with torch.no_grad():
         for data_, target in validation_loader:
             output = model(data_)
             # sum up batch loss
-            test_loss += F.nll_loss(output, target, reduction="sum").item()
+            tmp_loss += F.nll_loss(output, target, size_average=False).item()
+            test_loss += F.nll_loss(output, target, reduction="mean").item()
             # get index of the max log - probability
             pred = output.max(1, keepdim=True)[1]
             correct += pred.eq(target.view_as(pred)).cpu().sum()
@@ -79,6 +105,7 @@ def test(model, validation_loader):
                                                                                   len(validation_loader.dataset),
                                                                                   100. * correct / len(
                                                                                       validation_loader.sampler)))
+    return tmp_loss
 
 
 def create_loaders(train_x, train_y, validation_x, validation_y):
