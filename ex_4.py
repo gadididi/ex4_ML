@@ -1,10 +1,10 @@
 import sys
 import torch
-import torch.nn as nn
 import numpy as np
 import torchvision
 from torch.utils import data
 import torch.nn.functional as F
+from models import ModelA
 
 TRAIN_SIZE = 0.8
 VALIDATION_SIZE = 0.2
@@ -28,23 +28,6 @@ class MyDataSet(data.Dataset):
         if self.__transform:
             x = self.__transform(x)
         return x, y
-
-
-class ModelA(nn.Module):
-    def __init__(self, image_size):
-        super(ModelA, self).__init__()
-        self.image_size = image_size
-        self.fc0 = nn.Linear(image_size, 100)
-        self.fc1 = nn.Linear(100, 50)
-        self.fc2 = nn.Linear(50, 10)
-        self.optimizer = torch.optim.SGD(self.parameters(), lr=0.01)
-
-    def forward(self, x):
-        x = x.view(-1, self.image_size)
-        x = F.relu(self.fc0(x))
-        x = F.relu(self.fc1(x))
-        x = F.relu(self.fc2(x))
-        return F.log_softmax(x)
 
 
 def split_validation_train(train_x, train_y):
@@ -113,7 +96,6 @@ def run_models(train_loader, validation_loader):
 
 def main():
     try:
-
         train_x = np.loadtxt(sys.argv[1])
         train_y = np.loadtxt(sys.argv[2], dtype='int')
         test_x = np.loadtxt(sys.argv[3])
