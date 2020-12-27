@@ -63,16 +63,19 @@ class ModelD(nn.Module):
     def __init__(self, image_size):
         super(ModelD, self).__init__()
         self.image_size = image_size
-        self.fc0 = nn.Linear(image_size, 100)
-        self.fc1 = nn.Linear(100, 50)
-        self.fc2 = nn.Linear(50, 10)
+        self.classifier = nn.Sequential(
+            nn.Linear(image_size, 100),
+            nn.BatchNorm1d(100),  # applying batch norm
+            nn.ReLU(),
+            nn.Linear(100, 50),
+            nn.BatchNorm1d(50),
+            nn.ReLU(),
+            nn.Linear(50, 10))
         self.optimizer = torch.optim.SGD(self.parameters(), lr=LR)
 
     def forward(self, x):
-        x = x.view(-1, self.image_size)
-        x = F.relu(self.fc0(x))
-        x = F.relu(self.fc1(x))
-        x = self.fc2(x)
+        x = x.view(x.size(0), -1)
+        x = self.classifier(x)
         return F.log_softmax(x, dim=1)
 
 

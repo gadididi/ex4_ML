@@ -4,7 +4,7 @@ import numpy as np
 import torchvision
 from torch.utils import data
 import torch.nn.functional as F
-from models import ModelA, ModelB, ModelC
+from models import ModelA, ModelB, ModelC, ModelD
 
 TRAIN_SIZE = 0.8
 VALIDATION_SIZE = 0.2
@@ -92,15 +92,18 @@ def create_loaders(train_x, train_y, validation_x, validation_y):
 
 
 def run_models(train_loader, validation_loader):
-    print("*********************** MODEL A ******************** ")
-    model_a = ModelA(IMAGE_SIZE)
-    run_model(model_a, train_loader, validation_loader)
-    print("******************** MODEL B *********************** ")
-    model_b = ModelB(IMAGE_SIZE)
-    run_model(model_b, train_loader, validation_loader)
-    print("******************** MODEL C *********************** ")
-    model_c = ModelC(IMAGE_SIZE)
-    run_model(model_c, train_loader, validation_loader)
+    # print("*********************** MODEL A ******************** ")
+    # model_a = ModelA(IMAGE_SIZE)
+    # run_model(model_a, train_loader, validation_loader)
+    # print("******************** MODEL B *********************** ")
+    # model_b = ModelB(IMAGE_SIZE)
+    # run_model(model_b, train_loader, validation_loader)
+    # print("******************** MODEL C *********************** ")
+    # model_c = ModelC(IMAGE_SIZE)
+    # run_model(model_c, train_loader, validation_loader)
+    print("******************** MODEL D *********************** ")
+    model_d = ModelD(IMAGE_SIZE)
+    run_model(model_d, train_loader, validation_loader)
 
 
 def main():
