@@ -4,7 +4,7 @@ import numpy as np
 import torchvision
 from torch.utils import data
 import torch.nn.functional as F
-from models import ModelA
+from models import ModelA, ModelB
 
 TRAIN_SIZE = 0.8
 VALIDATION_SIZE = 0.2
@@ -13,9 +13,9 @@ EPOCH = 10
 
 
 class MyDataSet(data.Dataset):
-    def __init__(self, x, y, transform=None):
-        self.__x = torch.from_numpy(x).float()
-        self.__y = torch.from_numpy(y).float()
+    def __init__(self, x, y=None, transform=None):
+        self.__x = x
+        self.__y = y
         self.__transform = transform
 
     def __len__(self):
@@ -24,10 +24,12 @@ class MyDataSet(data.Dataset):
     def __getitem__(self, index):
         x = self.__x[index]
         y = self.__y[index]
-
+        x = np.asarray(x).astype(np.uint8).reshape(28, 28)
         if self.__transform:
             x = self.__transform(x)
-        return x, y
+        if self.__y is not None:
+            return x, y
+        return x
 
 
 def split_validation_train(train_x, train_y):
@@ -92,12 +94,15 @@ def create_loaders(train_x, train_y, validation_x, validation_y):
 def run_models(train_loader, validation_loader):
     model_a = ModelA(IMAGE_SIZE)
     run_model(model_a, train_loader, validation_loader)
+    model_b = ModelB(IMAGE_SIZE)
+    print("*******************************************")
+    run_model(model_b, train_loader, validation_loader)
 
 
 def main():
     try:
         train_x = np.loadtxt(sys.argv[1])
-        train_y = np.loadtxt(sys.argv[2], dtype='int')
+        train_y = np.loadtxt(sys.argv[2], dtype="int64")
         test_x = np.loadtxt(sys.argv[3])
         train_x, train_y, validation_x, validation_y = split_validation_train(train_x, train_y)
         train_loader, validation_loader = create_loaders(train_x, train_y, validation_x, validation_y)
@@ -110,3 +115,6 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
+
