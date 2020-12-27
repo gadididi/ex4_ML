@@ -74,8 +74,7 @@ class ModelD(nn.Module):
         self.optimizer = torch.optim.SGD(self.parameters(), lr=LR)
 
     def forward(self, x):
-        x = x.view(x.size(0), -1)
-        x = self.classifier(x)
+        x = x.view(-1, self.image_size)
         return F.log_softmax(x, dim=1)
 
 
