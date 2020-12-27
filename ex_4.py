@@ -4,7 +4,7 @@ import numpy as np
 import torchvision
 from torch.utils import data
 import torch.nn.functional as F
-from models import ModelA, ModelB, ModelC, ModelD
+from models import ModelA, ModelB, ModelC, ModelD, ModelE, ModelF
 
 TRAIN_SIZE = 0.8
 VALIDATION_SIZE = 0.2
@@ -78,7 +78,7 @@ def test(model, validation_loader):
     print("\nTests set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n".format(test_loss, correct,
                                                                                   len(validation_loader.dataset),
                                                                                   100. * correct / len(
-                                                                                      validation_loader.dataset)))
+                                                                                      validation_loader.sampler)))
 
 
 def create_loaders(train_x, train_y, validation_x, validation_y):
@@ -104,16 +104,19 @@ def run_models(train_loader, validation_loader):
     print("******************** MODEL D *********************** ")
     model_d = ModelD(IMAGE_SIZE)
     run_model(model_d, train_loader, validation_loader)
-    print("******************** MODEL D *********************** ")
-    model_d = ModelD(IMAGE_SIZE)
-    run_model(model_d, train_loader, validation_loader)
+    print("******************** MODEL E *********************** ")
+    model_e = ModelE(IMAGE_SIZE)
+    run_model(model_e, train_loader, validation_loader)
+    print("******************** MODEL F *********************** ")
+    model_f = ModelF(IMAGE_SIZE)
+    run_model(model_f, train_loader, validation_loader)
 
 
 def main():
     try:
         train_x = np.loadtxt(sys.argv[1])
         train_y = np.loadtxt(sys.argv[2], dtype="int64")
-        # test_x = np.loadtxt(sys.argv[3])
+        test_x = np.loadtxt(sys.argv[3])
         train_x, train_y, validation_x, validation_y = split_validation_train(train_x, train_y)
         train_loader, validation_loader = create_loaders(train_x, train_y, validation_x, validation_y)
         run_models(train_loader, validation_loader)
