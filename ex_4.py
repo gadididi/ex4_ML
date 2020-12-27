@@ -113,7 +113,7 @@ def main():
     try:
         train_x = np.loadtxt(sys.argv[1])
         train_y = np.loadtxt(sys.argv[2], dtype="int64")
-        test_x = np.loadtxt(sys.argv[3])
+        # test_x = np.loadtxt(sys.argv[3])
         train_x, train_y, validation_x, validation_y = split_validation_train(train_x, train_y)
         train_loader, validation_loader = create_loaders(train_x, train_y, validation_x, validation_y)
         run_models(train_loader, validation_loader)
