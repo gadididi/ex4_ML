@@ -2,7 +2,7 @@ import torch.nn as nn
 import torch
 import torch.nn.functional as F
 
-LR = 0.01
+LR = 0.09
 
 
 class ModelA(nn.Module):
@@ -12,7 +12,7 @@ class ModelA(nn.Module):
         self.fc0 = nn.Linear(image_size, 100)
         self.fc1 = nn.Linear(100, 50)
         self.fc2 = nn.Linear(50, 10)
-        self.optimizer = torch.optim.SGD(self.parameters(), lr=LR)
+        self.optimizer = torch.optim.SGD(self.parameters(), lr=0.02)
 
     def forward(self, x):
         x = x.view(-1, self.image_size)
@@ -29,7 +29,7 @@ class ModelB(nn.Module):
         self.fc0 = nn.Linear(image_size, 100)
         self.fc1 = nn.Linear(100, 50)
         self.fc2 = nn.Linear(50, 10)
-        self.optimizer = torch.optim.Adam(self.parameters(), lr=LR)
+        self.optimizer = torch.optim.Adam(self.parameters(), lr=0.01)
 
     def forward(self, x):
         x = x.view(-1, self.image_size)
@@ -46,15 +46,32 @@ class ModelC(nn.Module):
         self.fc0 = nn.Linear(image_size, 100)
         self.fc1 = nn.Linear(100, 50)
         self.fc2 = nn.Linear(50, 10)
-        self.optimizer = torch.optim.SGD(self.parameters(), lr=LR)
+        self.optimizer = torch.optim.SGD(self.parameters(), lr=0.05)
 
     def forward(self, x):
         drop = nn.Dropout(p=0.2)
         x = x.view(-1, self.image_size)
+        x = drop(x)
         x = F.relu(self.fc0(x))
         x = drop(x)
         x = F.relu(self.fc1(x))
-        x = drop(x)
+        x = self.fc2(x)
+        return F.log_softmax(x, dim=1)
+
+
+class ModelD(nn.Module):
+    def __init__(self, image_size):
+        super(ModelD, self).__init__()
+        self.image_size = image_size
+        self.fc0 = nn.Linear(image_size, 100)
+        self.fc1 = nn.Linear(100, 50)
+        self.fc2 = nn.Linear(50, 10)
+        self.optimizer = torch.optim.SGD(self.parameters(), lr=LR)
+
+    def forward(self, x):
+        x = x.view(-1, self.image_size)
+        x = F.relu(self.fc0(x))
+        x = F.relu(self.fc1(x))
         x = self.fc2(x)
         return F.log_softmax(x, dim=1)
 
