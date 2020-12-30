@@ -60,7 +60,7 @@ def show_graph(train_res, test_res, what_kind):
     plt.show()
 
 
-def run_model(model, train_loader, test_loader):
+def run_model(model, train_loader, test_loader, test_x_loaders):
     loss_trains = []
     loss_tests = []
     accuracy_train = []
@@ -72,8 +72,9 @@ def run_model(model, train_loader, test_loader):
         loss_tests.append(loss_te / len(test_loader.sampler))
         accuracy_train.append(acc_tr)
         accuracy_test.append(acc_te)
-    show_graph(loss_trains, loss_tests, 'Loss')
-    show_graph(accuracy_train, accuracy_test, 'Accuracy')
+    # show_graph(loss_trains, loss_tests, 'Loss')
+    # show_graph(accuracy_train, accuracy_test, 'Accuracy')
+    predict(model, test_x_loaders)
 
 
 def train(model, train_loader):
@@ -114,46 +115,59 @@ def test(model, test_loader):
     return tmp_loss, (100. * correct / len(test_loader.sampler))
 
 
-def create_loaders(train_x, train_y, validation_x, validation_y):
+def create_loaders(train_x, train_y, validation_x=None, validation_y=None):
     transforms = torchvision.transforms.Compose(
         [torchvision.transforms.ToTensor(), torchvision.transforms.Normalize((0.1307,), (0.3081,))])
     train_set = MyDataSet(train_x, train_y, transforms)
-    validation_set = MyDataSet(validation_x, validation_y, transforms)
+    validation_loader = None
+    if validation_x is not None:
+        validation_set = MyDataSet(validation_x, validation_y, transforms)
+        validation_loader = torch.utils.data.DataLoader(validation_set, batch_size=64, shuffle=True)
+        train_loader = torch.utils.data.DataLoader(train_set, batch_size=64, shuffle=True)
+    else:
+        train_loader = torch.utils.data.DataLoader(train_set)
 
-    train_loader = torch.utils.data.DataLoader(train_set, batch_size=64, shuffle=True)
-    validation_loader = torch.utils.data.DataLoader(validation_set, batch_size=64, shuffle=True)
     return train_loader, validation_loader
 
 
-def run_models(train_loader, validation_loader):
-    print("******************** MODEL B *********************** ")
-    model_b = ModelB(IMAGE_SIZE)
-    run_model(model_b, train_loader, validation_loader)
+def run_models(train_loader, validation_loader, test_x_loaders):
+    print("******************** MODEL D *********************** ")
+    model_b = ModelD(IMAGE_SIZE)
+    run_model(model_b, train_loader, validation_loader, test_x_loaders)
 
 
 def create_original_loaders():
-    train_set = torchvision.datasets.\
-        FashionMNIST(
-            root="./data", download=True, transform=torchvision.transforms.ToTensor())
-    test_set = torchvision.datasets.\
-        FashionMNIST(
-            root="./data", train=False,
-            download=True, transform=torchvision.transforms.ToTensor())
+    train_set = torchvision.datasets. \
+        FashionMNIST(root="./data", download=True, transform=torchvision.transforms.ToTensor())
+    test_set = torchvision.datasets. \
+        FashionMNIST(root="./data", train=False, download=True, transform=torchvision.transforms.ToTensor())
     test_loader = torch.utils.data.DataLoader(test_set, batch_size=100)
     train_loader = torch.utils.data.DataLoader(train_set, batch_size=100)
     return train_loader, test_loader
 
+
+def predict(best_model, test_x_loaders):
+    test_y = open("test_y", 'w+')
+    best_model.eval()
+    with torch.no_grad():
+        for x in test_x_loaders:
+            output = best_model(x)
+            pred = output.data.max(1, keepdim=True)[1].item()
+            line = str(pred) + "\n"
+            test_y.write(line)
+    test_y.close()
 
 
 def main():
     try:
         train_x = np.loadtxt(sys.argv[1])
         train_y = np.loadtxt(sys.argv[2], dtype="int64")
+        test_x = np.loadtxt(sys.argv[3])
+        test_x_loaders, _ = create_loaders(test_x, None, None, None)
         train_x, train_y, validation_x, validation_y = split_validation_train(train_x, train_y)
-        train_loader, validation_loader = create_loaders(
-            train_x, train_y, validation_x, validation_y)
-        train_fashion_loader, test_fashion_loader = create_original_loaders()
-        run_models(train_fashion_loader, test_fashion_loader)
+        train_loader, validation_loader = create_loaders(train_x, train_y, validation_x, validation_y)
+        # train_fashion_loader, test_fashion_loader = create_original_loaders()
+        run_models(train_loader, validation_loader, test_x_loaders)
     except IndexError as e:
         print(e)
         exit(-1)

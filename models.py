@@ -31,7 +31,7 @@ class ModelB(nn.Module):
             nn.Linear(100, 50),
             nn.ReLU(),
             nn.Linear(50, 10))
-        self.optimizer = torch.optim.Adam(self.parameters(), lr=0.01)
+        self.optimizer = torch.optim.Adam(self.parameters(), lr=0.02)
 
     def forward(self, x):
         x = x.view(-1, self.image_size)
